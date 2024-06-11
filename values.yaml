@@ -68,10 +68,19 @@ frontend:
               containerPort: 8080
               protocol: TCP
 
+          volumeMounts:
+            /data:
+              name: datadir
+            /etc/nginx/conf.d:
+              name: nginx-conf
+
       volumes:
         datadir:
           persistentVolumeClaim:
             claimName: merginmaps-data
+        nginx-conf:
+          configMap:
+            name: merginmaps-nginx-conf
 
 server:
   ingress:
@@ -172,6 +181,10 @@ server:
             http:
               containerPort: 8080
               protocol: TCP
+
+          volumeMounts:
+            /data:
+              name: datadir
 
       volumes:
         datadir:
