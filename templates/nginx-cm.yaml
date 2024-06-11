@@ -1,0 +1,64 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $.Release.Name }}-nginx-conf
+  labels:
+    app: {{ $.Release.Name }}-nginx
+data:
+  config_server.conf: |
+    server {
+      listen 8080;
+      listen [::]:8080;
+      server_name _;
+
+      client_max_body_size 4G;
+
+      # path for static files
+      # root /path/to/app/current/public;
+      # We are only proxying - not returning any files
+      #root /dev/null;
+
+      location / {
+        root   /usr/share/nginx/html/app/;
+        index  index.html;
+        try_files $uri $uri/ /index.html;
+      }
+
+      # proxy to backend
+      # we need to disable buffering for these endpoints which use stream (up or down)
+      # /v1/project/download/
+      location ~ /v1/project/download/ {
+        # unfortunately, proxy settings do not support inheritance within nested locations, hence copied set up from root location
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Host $http_host;
+        # we don't want nginx trying to do something clever with
+        # redirects, we set the Host: header above already.
+        proxy_redirect off;
+        proxy_pass   http://{{ $.Release.Name }}-server-server:8080;
+
+        # disable buffering
+        client_max_body_size 0; # No maximum client body size
+        proxy_http_version 1.1; # Needed to disable client buffering
+        proxy_request_buffering off;
+        proxy_buffering off;
+      }
+
+      location ~ ^/(v1/|v2/|app/|ping|config) {
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Host $http_host;
+        proxy_pass http://{{ $.Release.Name }}-server-server:8080;
+      }
+
+      location ~ ^/admin($|/) {
+        root   /usr/share/nginx/html;
+        try_files $uri $uri/ /admin/index.html;
+      }
+
+      location /download/ {
+        internal;
+        alias   /data/; # we need to mount data from mergin server here
+      }
+    }
