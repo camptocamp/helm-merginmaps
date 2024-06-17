@@ -1,0 +1,24 @@
+apiVersion: v1
+entries:
+  merginmaps:
+  - apiVersion: v2
+    created: "2024-06-17T09:16:01.942481493Z"
+    dependencies:
+    - alias: frontend
+      name: custom-pod
+      repository: https://camptocamp.github.io/helm-custom-pod
+      version: 1.0.0
+    - alias: server
+      name: custom-pod
+      repository: https://camptocamp.github.io/helm-custom-pod
+      version: 1.0.0
+    description: A Helm chart for deploying MerginMaps on Kubernetes
+    digest: 31ee646a72f3d2cd123f13bb2e7f5bb9175feeb5f63bf7930580f3a1c034b240
+    home: https://merginmaps.com/
+    name: merginmaps
+    sources:
+    - https://github.com/MerginMaps/mergin
+    urls:
+    - https://github.com/camptocamp/helm-merginmaps/releases/download/0.1.0/merginmaps-0.1.0.tgz
+    version: 0.1.0
+generated: "2024-06-17T09:16:01.942493767Z"
