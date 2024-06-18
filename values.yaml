@@ -1,6 +1,46 @@
 ingress: &ingress {}
 ingress-test: *ingress
 
+backendImage: &backendImage
+  repository: camptocamp/merginmaps-server
+  tag: "20240604"
+
+frontendImage: &frontendImage
+  repository: camptocamp/merginmaps-frontend
+  tag: "20240604"
+
+envVariables: &envVariables
+  COLLECT_STATISTICS:
+    value: 'false'
+  DEFAULT_STORAGE_SIZE:
+    value: '100000000'
+  GEODIFF_LOGGER_LEVEL:
+    value: '2'
+  GLOBAL_READ:
+    value: 'false'
+  GLOBAL_STORAGE:
+    value: '210748364800'
+  GLOBAL_WORKSPACE:
+    value: mergin
+  GLOBAL_WRITE:
+    value: 'false'
+  LOCAL_PROJECT:
+    value: /data
+  MAINTENANCE_FILE:
+    value: /data/MAINTENANCE
+  MAX_CHUNK_SIZE:
+    value: '10485760'
+  MAIL_SUPPRESS_SEND:
+    value: '1'
+  TEMP_DIR:
+    value: /data/tmp
+  USER_SELF_REGISTRATION:
+    value: '1'
+  USE_X_ACCEL:
+    value: 'true'
+  VERSION:
+    value: 2023.6.1
+
 global:
   image:
     pullPolicy: Always
@@ -43,9 +83,7 @@ frontend:
 
       containers:
         frontend:
-          image:
-            repository: camptocamp/merginmaps-frontend
-            tag: "20240604"
+          image: *frontendImage
 
           readinessProbe:
             httpGet:
@@ -114,42 +152,11 @@ server:
           targetPort: 8080
 
       containers:
-        server:
-          image:
-            repository: camptocamp/merginmap-backend
-            tag: "v0.1.0"
+        server-gunicorn:
+          image: *backendImage
+          command: ["gunicorn", "--config", "config.py", "application:application"]
 
-          env:
-            COLLECT_STATISTICS:
-              value: 'false'
-            DEFAULT_STORAGE_SIZE:
-              value: '100000000'
-            GEODIFF_LOGGER_LEVEL:
-              value: '2'
-            GLOBAL_READ:
-              value: 'false'
-            GLOBAL_STORAGE:
-              value: '210748364800'
-            GLOBAL_WORKSPACE:
-              value: mergin
-            GLOBAL_WRITE:
-              value: 'false'
-            LOCAL_PROJECT:
-              value: /data
-            MAINTENANCE_FILE:
-              value: /data/MAINTENANCE
-            MAX_CHUNK_SIZE:
-              value: '10485760'
-            MAIL_SUPPRESS_SEND:
-              value: '1'
-            TEMP_DIR:
-              value: /data/tmp
-            USER_SELF_REGISTRATION:
-              value: '1'
-            USE_X_ACCEL:
-              value: 'true'
-            VERSION:
-              value: 2023.6.1
+          env: *envVariables
 
           readinessProbe:
             httpGet:
@@ -185,6 +192,56 @@ server:
           volumeMounts:
             /data:
               name: datadir
+
+        celery-beat:
+          image: *backendImage
+          command: ["celery", "-A", "application.celery", "beat", "--loglevel", "info"]
+
+          env: *envVariables
+
+          livenessProbe:
+            exec:
+              command:
+              - "celery"
+              - "inspect"
+              - "ping"
+              - "-A application.celery"
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            periodSeconds: 10
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
+        celery-worker:
+          image: *backendImage
+          command: ["celery", "-A", "application.celery", "worker", "--loglevel", "info"]
+
+          env: *envVariables
+
+          livenessProbe:
+            exec:
+              command:
+              - "celery"
+              - "inspect"
+              - "ping"
+              - "-A application.celery"
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            periodSeconds: 10
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
 
       volumes:
         datadir:
