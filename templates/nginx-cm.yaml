@@ -36,7 +36,7 @@ data:
         # we don't want nginx trying to do something clever with
         # redirects, we set the Host: header above already.
         proxy_redirect off;
-        proxy_pass   http://{{ $.Release.Name }}-server-server:8080;
+        proxy_pass   http://{{ $.Release.Name }}-server-server:5000;
 
         # disable buffering
         client_max_body_size 0; # No maximum client body size
@@ -49,7 +49,7 @@ data:
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header Host $http_host;
-        proxy_pass http://{{ $.Release.Name }}-server-server:8080;
+        proxy_pass http://{{ $.Release.Name }}-server-server:5000;
       }
 
       location ~ ^/admin($|/) {

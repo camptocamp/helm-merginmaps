@@ -32,6 +32,8 @@ envVariables: &envVariables
     value: '10485760'
   MAIL_SUPPRESS_SEND:
     value: '1'
+  PORT:
+    value: '5000'
   TEMP_DIR:
     value: /data/tmp
   USER_SELF_REGISTRATION:
@@ -144,12 +146,12 @@ server:
 
       service:
         type: ClusterIP
-        servicePort: 8080
+        servicePort: 5000
         ports:
         - name: http
-          port: 8080
+          port: 5000
           protocol: TCP
-          targetPort: 8080
+          targetPort: 5000
 
       containers:
         server-gunicorn:
@@ -161,7 +163,7 @@ server:
           readinessProbe:
             httpGet:
               path: /ping
-              port: 8080
+              port: 5000
             initialDelaySeconds: 10
             timeoutSeconds: 1
             periodSeconds: 20
@@ -171,7 +173,7 @@ server:
               command:
               - curl
               - -X POST
-              - 0.0.0.0:8080/alive
+              - 0.0.0.0:5000/alive
             initialDelaySeconds: 10
             timeoutSeconds: 1
             periodSeconds: 20
@@ -186,7 +188,7 @@ server:
 
           ports:
             http:
-              containerPort: 8080
+              containerPort: 5000
               protocol: TCP
 
           volumeMounts:
