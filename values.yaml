@@ -168,15 +168,16 @@ server:
             timeoutSeconds: 1
             periodSeconds: 20
 
-          livenessProbe:
-            exec:
-              command:
-              - curl
-              - -X POST
-              - 0.0.0.0:5000/alive
-            initialDelaySeconds: 10
-            timeoutSeconds: 1
-            periodSeconds: 20
+          # FIXME: Temporarily disabled because current server image don't have cURL
+          # livenessProbe:
+          #   exec:
+          #     command:
+          #     - curl
+          #     - -X POST
+          #     - 0.0.0.0:5000/alive
+          #   initialDelaySeconds: 10
+          #   timeoutSeconds: 1
+          #   periodSeconds: 20
 
           resources:
             requests:
@@ -204,13 +205,14 @@ server:
           livenessProbe:
             exec:
               command:
-              - "celery"
-              - "inspect"
-              - "ping"
-              - "-A application.celery"
-            initialDelaySeconds: 10
-            timeoutSeconds: 5
-            periodSeconds: 10
+              - sh
+              - '-c'
+              - celery inspect ping -A application.celery | grep -q OK
+            failureThreshold: 3
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 10
 
           resources:
             requests:
@@ -229,13 +231,14 @@ server:
           livenessProbe:
             exec:
               command:
-              - "celery"
-              - "inspect"
-              - "ping"
-              - "-A application.celery"
-            initialDelaySeconds: 10
-            timeoutSeconds: 5
-            periodSeconds: 10
+              - sh
+              - '-c'
+              - celery inspect ping -A application.celery | grep -q OK
+            failureThreshold: 3
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 10
 
           resources:
             requests:
