@@ -3,11 +3,11 @@ ingress-test: *ingress
 
 backendImage: &backendImage
   repository: camptocamp/merginmaps-server
-  tag: "20240604"
+  tag: "2024.2.2-c2c.2"
 
 frontendImage: &frontendImage
   repository: camptocamp/merginmaps-frontend
-  tag: "20240604"
+  tag: "2024.2.2-c2c.2"
 
 envVariables: &envVariables
   COLLECT_STATISTICS:
@@ -24,7 +24,7 @@ envVariables: &envVariables
     value: mergin
   GLOBAL_WRITE:
     value: 'false'
-  LOCAL_PROJECT:
+  LOCAL_PROJECTS:
     value: /data
   MAINTENANCE_FILE:
     value: /data/MAINTENANCE
@@ -41,7 +41,7 @@ envVariables: &envVariables
   USE_X_ACCEL:
     value: 'true'
   VERSION:
-    value: 2023.6.1
+    value: 2024.2.2
 
 global:
   image:
