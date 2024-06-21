@@ -207,7 +207,7 @@ server:
               command:
               - sh
               - '-c'
-              - celery inspect ping -A application.celery | grep -q OK
+              - celery -A application.celery inspect ping | grep -q OK
             failureThreshold: 3
             initialDelaySeconds: 30
             periodSeconds: 15
@@ -233,7 +233,7 @@ server:
               command:
               - sh
               - '-c'
-              - celery inspect ping -A application.celery | grep -q OK
+              - celery -A application.celery inspect ping | grep -q OK
             failureThreshold: 3
             initialDelaySeconds: 30
             periodSeconds: 15
