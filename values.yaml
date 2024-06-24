@@ -3,11 +3,11 @@ ingress-test: *ingress
 
 backendImage: &backendImage
   repository: camptocamp/merginmaps-server
-  tag: "2024.2.2-c2c.2"
+  tag: "2024.2.2-c2c.3"
 
 frontendImage: &frontendImage
   repository: camptocamp/merginmaps-frontend
-  tag: "2024.2.2-c2c.2"
+  tag: "2024.2.2-c2c.3"
 
 envVariables: &envVariables
   COLLECT_STATISTICS:
