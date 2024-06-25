@@ -207,10 +207,10 @@ server:
               command:
               - sh
               - '-c'
-              - celery -A application.celery inspect ping --timeout 5 | grep -q OK
+              - celery -A application.celery inspect ping --timeout 10 | grep -q OK
             failureThreshold: 3
             initialDelaySeconds: 30
-            periodSeconds: 15
+            periodSeconds: 30
             successThreshold: 1
             timeoutSeconds: 10
 
@@ -233,10 +233,10 @@ server:
               command:
               - sh
               - '-c'
-              - celery -A application.celery inspect ping --timeout 5 | grep -q OK
+              - celery -A application.celery inspect ping --timeout 10 | grep -q OK
             failureThreshold: 3
             initialDelaySeconds: 30
-            periodSeconds: 15
+            periodSeconds: 30
             successThreshold: 1
             timeoutSeconds: 10
 
