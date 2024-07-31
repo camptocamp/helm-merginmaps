@@ -156,7 +156,11 @@ server:
       containers:
         server-gunicorn:
           image: *backendImage
-          command: ["gunicorn", "--config", "config.py", "application:application"]
+          command: 
+          - "gunicorn"
+          - "--config"
+          - "config.py"
+          - "application:application"
 
           env: *envVariables
 
@@ -198,7 +202,13 @@ server:
 
         celery-beat:
           image: *backendImage
-          command: ["celery", "-A", "application.celery", "beat", "--loglevel", "info"]
+          command: 
+          - "celery"
+          - "-A"
+          - "application.celery"
+          - "beat"
+          - "--loglevel"
+          - "info"
 
           env: *envVariables
 
@@ -224,7 +234,18 @@ server:
 
         celery-worker:
           image: *backendImage
-          command: ["celery", "-A", "application.celery", "worker", "--loglevel", "info"]
+          command: 
+          - "celery"
+          - "-A"
+          - "application.celery"
+          - "worker"
+          - "--loglevel"
+          - "info"
+          - '--without-mingle'
+          - '--without-heartbeat'
+          - '--without-gossip'
+          - '-Ofair'
+          - '--pool=solo'
 
           env: *envVariables
 
