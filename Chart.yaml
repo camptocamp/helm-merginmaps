@@ -4,13 +4,13 @@ name: merginmaps
 version: 0.2.9
 home: https://merginmaps.com/
 sources:
-- https://github.com/MerginMaps/mergin
+  - https://github.com/MerginMaps/mergin
 dependencies:
-- name: custom-pod
-  repository: https://camptocamp.github.io/helm-custom-pod
-  version: 1.0.0
-  alias: frontend
-- name: custom-pod
-  repository: https://camptocamp.github.io/helm-custom-pod
-  version: 1.0.0
-  alias: server
+  - name: custom-pod
+    repository: https://camptocamp.github.io/helm-application
+    version: 2.7.1
+    alias: frontend
+  - name: custom-pod
+    repository: https://camptocamp.github.io/helm-application
+    version: 2.7.1
+    alias: server
