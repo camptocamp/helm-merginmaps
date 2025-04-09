@@ -53,6 +53,7 @@ global:
   image:
     pullPolicy: Always
 
+fullnameOverride: {}
 pvc:
   storageClass: azurefile-csi-nobrl
   size: 200Gi
