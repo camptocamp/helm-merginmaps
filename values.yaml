@@ -2,46 +2,52 @@ ingress: &ingress {}
 ingress-test: *ingress
 
 backendImage: &backendImage
-  repository: camptocamp/merginmaps-server
-  tag: "2024.2.2-c2c.3"
+  repository: lutraconsulting/merginmaps-backend
+  tag: "2025.2.2"
 
 frontendImage: &frontendImage
-  repository: camptocamp/merginmaps-frontend
-  tag: "2024.2.2-c2c.3"
+  repository: lutraconsulting/merginmaps-frontend
+  tag: "2025.2.2"
 
 envVariables: &envVariables
   COLLECT_STATISTICS:
-    value: 'false'
+    value: "false"
   DEFAULT_STORAGE_SIZE:
-    value: '100000000'
+    value: "100000000"
   GEODIFF_LOGGER_LEVEL:
-    value: '2'
+    value: "2"
   GLOBAL_READ:
-    value: 'false'
+    value: "false"
   GLOBAL_STORAGE:
-    value: '210748364800'
+    value: "210748364800"
   GLOBAL_WORKSPACE:
     value: mergin
   GLOBAL_WRITE:
-    value: 'false'
+    value: "false"
   LOCAL_PROJECTS:
     value: /data
   MAINTENANCE_FILE:
     value: /data/MAINTENANCE
   MAX_CHUNK_SIZE:
-    value: '10485760'
+    value: "10485760"
   MAIL_SUPPRESS_SEND:
-    value: '1'
+    value: "1"
   PORT:
-    value: '5000'
+    value: "5000"
   TEMP_DIR:
     value: /data/tmp
   USER_SELF_REGISTRATION:
-    value: '1'
+    value: "1"
   USE_X_ACCEL:
-    value: 'true'
+    value: "true"
   VERSION:
-    value: 2024.2.2
+    value: 2025.2.2
+
+celeryEnvVariables: &celeryEnvVariables
+  GEVENT_WORKER:
+    value: "true"
+  NO_MONKEY_PATCH:
+    value: "false"
 
 global:
   image:
@@ -51,16 +57,16 @@ pvc:
   storageClass: azurefile-csi-nobrl
   size: 200Gi
   accessModes:
-  - ReadWriteMany
+    - ReadWriteMany
 
 frontend:
   ingress:
     enabled: false
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-prod
-      ingress.kubernetes.io/ssl-redirect: 'true'
+      ingress.kubernetes.io/ssl-redirect: "true"
       traefik.ingress.kubernetes.io/router.entrypoints: websecure
-      traefik.ingress.kubernetes.io/router.tls: 'true'
+      traefik.ingress.kubernetes.io/router.tls: "true"
 
   services:
     frontend:
@@ -78,10 +84,10 @@ frontend:
         type: ClusterIP
         servicePort: 8080
         ports:
-        - name: http
-          port: 8080
-          protocol: TCP
-          targetPort: 8080
+          - name: http
+            port: 8080
+            protocol: TCP
+            targetPort: 8080
 
       containers:
         frontend:
@@ -148,21 +154,22 @@ server:
         type: ClusterIP
         servicePort: 5000
         ports:
-        - name: http
-          port: 5000
-          protocol: TCP
-          targetPort: 5000
+          - name: http
+            port: 5000
+            protocol: TCP
+            targetPort: 5000
 
       containers:
         server-gunicorn:
           image: *backendImage
-          command: 
-          - "gunicorn"
-          - "--config"
-          - "config.py"
-          - "application:application"
+          command:
+            - "gunicorn"
+            - "--config"
+            - "config.py"
+            - "application:application"
 
-          env: *envVariables
+          env:
+            <<: [*envVariables]
 
           readinessProbe:
             httpGet:
@@ -202,22 +209,23 @@ server:
 
         celery-beat:
           image: *backendImage
-          command: 
-          - "celery"
-          - "-A"
-          - "application.celery"
-          - "beat"
-          - "--loglevel"
-          - "info"
+          command:
+            - "celery"
+            - "-A"
+            - "application.celery"
+            - "beat"
+            - "--loglevel"
+            - "info"
 
-          env: *envVariables
+          env:
+            <<: [*envVariables, *celeryEnvVariables]
 
           livenessProbe:
             exec:
               command:
-              - sh
-              - '-c'
-              - celery inspect ping -d celery@$(hostname) --timeout 10 | grep -q OK
+                - sh
+                - "-c"
+                - celery inspect ping -d celery@$(hostname) --timeout 10 | grep -q OK
             failureThreshold: 3
             initialDelaySeconds: 60
             periodSeconds: 30
@@ -234,27 +242,23 @@ server:
 
         celery-worker:
           image: *backendImage
-          command: 
-          - "celery"
-          - "-A"
-          - "application.celery"
-          - "worker"
-          - "--loglevel"
-          - "info"
-          - '--without-mingle'
-          - '--without-heartbeat'
-          - '--without-gossip'
-          - '-Ofair'
-          - '--pool=solo'
+          command:
+            - "celery"
+            - "-A"
+            - "application.celery"
+            - "worker"
+            - "--loglevel"
+            - "info"
 
-          env: *envVariables
+          env:
+            <<: [*envVariables, *celeryEnvVariables]
 
           livenessProbe:
             exec:
               command:
-              - sh
-              - '-c'
-              - celery inspect ping -d celery@$(hostname) --timeout 10 | grep -q OK
+                - sh
+                - "-c"
+                - celery inspect ping -d celery@$(hostname) --timeout 10 | grep -q OK
             failureThreshold: 3
             initialDelaySeconds: 60
             periodSeconds: 30
@@ -273,4 +277,3 @@ server:
         datadir:
           persistentVolumeClaim:
             claimName: merginmaps-data
-
